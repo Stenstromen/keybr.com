@@ -29,8 +29,9 @@ jobs:
       - name: Build and push to ghcr.io (multi-platform) with version tag
         uses: docker/build-push-action@v7
         with:
+          context: .
           push: true
           tags: |
             ghcr.io/stenstromen/${{ env.IMAGE_NAME }}:latest
             ghcr.io/stenstromen/${{ env.IMAGE_NAME }}:${{ github.event.release.tag_name }}
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
