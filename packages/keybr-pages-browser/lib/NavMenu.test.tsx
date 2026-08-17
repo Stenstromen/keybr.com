@@ -1,5 +1,5 @@
 import { test } from "node:test";
-import { FakeIntlProvider, PreferredLocaleContext } from "@keybr/intl";
+import { FakeIntlProvider } from "@keybr/intl";
 import { PageDataContext } from "@keybr/pages-shared";
 import { render } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
@@ -22,19 +22,15 @@ test("render", () => {
         settings: null,
       }}
     >
-      <PreferredLocaleContext.Provider value="pl">
-        <FakeIntlProvider>
-          <MemoryRouter>
-            <NavMenu currentPath="/page" />
-          </MemoryRouter>
-        </FakeIntlProvider>
-      </PreferredLocaleContext.Provider>
+      <FakeIntlProvider>
+        <MemoryRouter>
+          <NavMenu />
+        </MemoryRouter>
+      </FakeIntlProvider>
     </PageDataContext.Provider>,
   );
 
   isNotNull(r.queryByText("userName"));
-  isNotNull(r.queryByText("Polski"));
-  isNotNull(r.queryByText("English"));
 
   r.unmount();
 });

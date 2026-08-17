@@ -57,7 +57,7 @@ function PageRoutes() {
           index={true}
           path={Pages.practice.path}
           element={
-            <Template path={Pages.practice.path}>
+            <Template>
               <Title page={Pages.practice} />
               <Suspense fallback={<LoadingProgress />}>
                 <PracticePage />
@@ -68,7 +68,7 @@ function PageRoutes() {
         <Route
           path={Pages.account.path}
           element={
-            <Template path={Pages.account.path}>
+            <Template>
               <Title page={Pages.account} />
               <Suspense fallback={<LoadingProgress />}>
                 <AccountPage />
@@ -79,7 +79,7 @@ function PageRoutes() {
         <Route
           path={Pages.help.path}
           element={
-            <Template path={Pages.help.path}>
+            <Template>
               <Title page={Pages.help} />
               <Suspense fallback={<LoadingProgress />}>
                 <HelpPage />
@@ -90,7 +90,7 @@ function PageRoutes() {
         <Route
           path={Pages.highScores.path}
           element={
-            <Template path={Pages.highScores.path}>
+            <Template>
               <Title page={Pages.highScores} />
               <Suspense fallback={<LoadingProgress />}>
                 <HighScorePage />
@@ -101,7 +101,7 @@ function PageRoutes() {
         <Route
           path={Pages.layouts.path}
           element={
-            <Template path={Pages.layouts.path}>
+            <Template>
               <Title page={Pages.layouts} />
               <Suspense fallback={<LoadingProgress />}>
                 <LayoutsPage />
@@ -112,7 +112,7 @@ function PageRoutes() {
         <Route
           path={Pages.multiplayer.path}
           element={
-            <Template path={Pages.multiplayer.path}>
+            <Template>
               <Title page={Pages.multiplayer} />
               <Suspense fallback={<LoadingProgress />}>
                 <MultiplayerPage />
@@ -123,7 +123,7 @@ function PageRoutes() {
         <Route
           path={`${Pages.profile.path}`}
           element={
-            <Template path={Pages.profile.path}>
+            <Template>
               <Title page={Pages.profile} />
               <Suspense fallback={<LoadingProgress />}>
                 <ProfilePage />
@@ -134,7 +134,7 @@ function PageRoutes() {
         <Route
           path={`${Pages.profile.path}/:userId`}
           element={
-            <Template path={Pages.profile.path}>
+            <Template>
               <Title page={Pages.profile} />
               <Suspense fallback={<LoadingProgress />}>
                 <ProfilePage />
@@ -145,7 +145,7 @@ function PageRoutes() {
         <Route
           path={Pages.typingTest.path}
           element={
-            <Template path={Pages.typingTest.path}>
+            <Template>
               <Title page={Pages.typingTest} />
               <Suspense fallback={<LoadingProgress />}>
                 <TypingTestPage />
@@ -156,7 +156,7 @@ function PageRoutes() {
         <Route
           path={Pages.termsOfService.path}
           element={
-            <Template path={Pages.termsOfService.path}>
+            <Template>
               <Title page={Pages.termsOfService} />
               <Suspense fallback={<LoadingProgress />}>
                 <TermsOfServicePage />
@@ -167,7 +167,7 @@ function PageRoutes() {
         <Route
           path={Pages.privacyPolicy.path}
           element={
-            <Template path={Pages.privacyPolicy.path}>
+            <Template>
               <Title page={Pages.privacyPolicy} />
               <Suspense fallback={<LoadingProgress />}>
                 <PrivacyPolicyPage />
@@ -178,7 +178,7 @@ function PageRoutes() {
         <Route
           path="*"
           element={
-            <Template path={Pages.practice.path}>
+            <Template>
               <Title page={Pages.practice} />
               <Suspense fallback={<LoadingProgress />}>
                 <PracticePage />

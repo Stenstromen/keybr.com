@@ -1,6 +1,6 @@
 import { cookiebotClientId } from "@keybr/thirdparties";
 
-export function loadScripts(): Promise<boolean> {
+export function loadScripts(): Promise<void> {
   return Promise.resolve()
     .then(() =>
       loadScript("https://consent.cookiebot.com/uc.js", (script) => {
@@ -10,11 +10,7 @@ export function loadScripts(): Promise<boolean> {
         script.dataset.framework = "TCFv2.2";
       }),
     )
-    .then(() => loadScript("https://a.pub.network/keybr-com/pubfig.min.js"))
-    .then(
-      () => true,
-      () => false,
-    );
+    .then(() => loadScript("https://a.pub.network/keybr-com/pubfig.min.js"));
 }
 
 function loadScript(

@@ -23,7 +23,7 @@ test("render", () => {
     >
       <FakeIntlProvider>
         <MemoryRouter>
-          <Template path="/page">
+          <Template>
             <div>hello</div>
           </Template>
         </MemoryRouter>
@@ -54,7 +54,7 @@ test("render alt", () => {
     >
       <FakeIntlProvider>
         <MemoryRouter>
-          <Template path="/page">
+          <Template>
             <div>hello</div>
           </Template>
         </MemoryRouter>

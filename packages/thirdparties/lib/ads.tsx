@@ -1,5 +1,4 @@
 import { memo, type ReactNode } from "react";
-import * as styles from "./styles.ts";
 
 export const slot1 = "keybr_728x90_970x90_ATF";
 export const slot2 = "keybr_160x600_Left";
@@ -44,15 +43,7 @@ export const AdBanner = memo(function AdBanner({
 }): ReactNode {
   const { id, width, height } = inventory[name];
   if (process.env.NODE_ENV === "development") {
-    return (
-      <div
-        style={{
-          width: `${width}px`,
-          height: `${height}px`,
-          background: "#999",
-        }}
-      />
-    );
+    return null;
   }
   const html = `freestar.queue.push(function(){googletag.display("${id}");});`;
   return (
@@ -64,7 +55,6 @@ export const AdBanner = memo(function AdBanner({
         overflow: "hidden",
       }}
     >
-      <div className={styles.placeholder} hidden={true} />
       <div id={id}>
         <script dangerouslySetInnerHTML={{ __html: html }} />
       </div>

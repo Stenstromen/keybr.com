@@ -5,13 +5,7 @@ import { type ReactNode } from "react";
 import { NavMenu } from "./NavMenu.tsx";
 import * as styles from "./Template.module.less";
 
-export function Template({
-  path,
-  children,
-}: {
-  readonly path: string;
-  readonly children: ReactNode;
-}) {
+export function Template({ children }: { readonly children: ReactNode }) {
   const { publicUser } = usePageData();
   return isPremiumUser(publicUser) ? (
     <div className={styles.bodyAlt}>
@@ -21,7 +15,7 @@ export function Template({
         <Toaster />
       </main>
       <nav className={styles.navAlt}>
-        <NavMenu currentPath={path} />
+        <NavMenu />
       </nav>
       <EnvName />
     </div>
@@ -33,7 +27,7 @@ export function Template({
         <Toaster />
       </main>
       <nav className={styles.nav}>
-        <NavMenu currentPath={path} />
+        <NavMenu />
       </nav>
       <div className={styles.topbar}>
         <AdBanner name="BANNER_970X90_1" />

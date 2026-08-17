@@ -11,16 +11,17 @@ import { type ReactNode } from "react";
 import { useIntl } from "react-intl";
 import { NavLink } from "react-router";
 import * as styles from "./NavMenu.module.less";
-import { SubMenu } from "./SubMenu.tsx";
 import { ThemeSwitcher } from "./themes/ThemeSwitcher.tsx";
 
-export function NavMenu({ currentPath }: { readonly currentPath: string }) {
+export function NavMenu() {
   const { publicUser } = usePageData();
   return (
     <div className={styles.root}>
-      <MenuItem>
-        <AccountLink user={publicUser} />
-      </MenuItem>
+      {publicUser.id != null && (
+        <MenuItem>
+          <AccountLink user={publicUser} />
+        </MenuItem>
+      )}
 
       <MenuItem>
         <ThemeSwitcher />
@@ -35,27 +36,11 @@ export function NavMenu({ currentPath }: { readonly currentPath: string }) {
       </MenuItem>
 
       <MenuItem>
-        <MenuItemLink page={Pages.help} />
-      </MenuItem>
-
-      <MenuItem>
-        <MenuItemLink page={Pages.highScores} />
-      </MenuItem>
-
-      <MenuItem>
-        <MenuItemLink page={Pages.multiplayer} />
-      </MenuItem>
-
-      <MenuItem>
         <MenuItemLink page={Pages.typingTest} />
       </MenuItem>
 
       <MenuItem>
         <MenuItemLink page={Pages.layouts} />
-      </MenuItem>
-
-      <MenuItem>
-        <SubMenu currentPath={currentPath} />
       </MenuItem>
     </div>
   );
@@ -66,7 +51,6 @@ function MenuItem({ children }: { readonly children: ReactNode }) {
 }
 
 function AccountLink({ user }: { readonly user: AnyUser }) {
-  const { formatMessage } = useIntl();
   return (
     <NavLink
       className={({ isActive }) =>
@@ -75,14 +59,7 @@ function AccountLink({ user }: { readonly user: AnyUser }) {
       to={Pages.account.path}
     >
       <Avatar user={user.id != null ? user : null} size="large" />
-      <span className={styles.userName}>
-        {user.id != null
-          ? user.name
-          : formatMessage({
-              id: "t_Sing_In",
-              defaultMessage: "Sign-In",
-            })}
-      </span>
+      <span className={styles.userName}>{user.name}</span>
     </NavLink>
   );
 }
