@@ -3,7 +3,6 @@ import { userInfo } from "node:os";
 import { type Application } from "@fastr/core";
 import { injectable } from "@fastr/invert";
 import { Logger } from "@keybr/logger";
-import { WebSocketServer } from "ws";
 import { type Closer, createCloser } from "./closer.ts";
 
 const { pid } = process;
@@ -12,13 +11,11 @@ const { username } = userInfo();
 @injectable({ singleton: true })
 export class Service {
   readonly #server: Server;
-  readonly #webSocketServer: WebSocketServer;
   readonly #closer: Closer;
 
-  constructor(server: Server, webSocketServer: WebSocketServer) {
+  constructor(server: Server) {
     this.#server = server;
-    this.#webSocketServer = webSocketServer;
-    this.#closer = createCloser(this.#server, this.#webSocketServer);
+    this.#closer = createCloser(this.#server);
   }
 
   start({ app, port }: { app: Application; port: number }) {
@@ -26,7 +23,6 @@ export class Service {
     this.#server.on("request", callback);
     this.#server.on("upgrade", (req, socket, head) => {
       if (head.length > 0) {
-        // Unread head back to the request stream.
         socket.unshift(head);
       }
       const res = new ServerResponse(req);
@@ -56,10 +52,8 @@ export class Service {
 
     Logger.info("Stopping server...", { pid });
 
-    // Stop accepting new connections.
     this.#closer(false, graceful);
 
-    // There may be open keep-alive connections, force shutdown.
     setTimeout(forceful, 1000);
   }
 }

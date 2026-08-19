@@ -1,18 +1,27 @@
-FROM node:24
+# syntax=docker/dockerfile:1
 
-# Set the working directory inside the container
-WORKDIR /usr/src/app
-
-# Copy the repository files into the container
+FROM node:24-bookworm-slim AS builder
+WORKDIR /src
 COPY . .
+RUN npm ci --ignore-scripts && npx patch-package
+RUN npm run build
 
-# Install dependencies
-RUN npm ci
+FROM node:24-alpine AS runtime
+WORKDIR /opt/keybr
 
-# Compile monorepo and build bundle
-RUN npm run compile && npm run build
+RUN mkdir -p /var/lib/keybr && chown node:node /var/lib/keybr
 
-# Expose the application's default port
+COPY --from=builder --chown=node:node /src/root/index.js /src/root/_config.js ./
+COPY --from=builder --chown=node:node /src/root/lib ./lib
+COPY --from=builder --chown=node:node /src/root/public ./public
+
+ENV NODE_ENV=production
+ENV DATA_DIR=/var/lib/keybr
+ENV APP_URL=http://localhost:3000/
+ENV COOKIE_DOMAIN=localhost
+ENV COOKIE_SECURE=false
+ENV SERVER_PORT=3000
+
+USER node
 EXPOSE 3000
-
-CMD ["npm", "run", "start-docker"]
+CMD ["node", "index.js"]

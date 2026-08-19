@@ -3,7 +3,7 @@ import { FakeIntlProvider } from "@keybr/intl";
 import { PageDataContext } from "@keybr/pages-shared";
 import { render } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
-import { isNotNull } from "rich-assert";
+import { isNotNull, isNull } from "rich-assert";
 import { NavMenu } from "./NavMenu.tsx";
 
 test("render", () => {
@@ -14,10 +14,9 @@ test("render", () => {
         locale: "en",
         user: null,
         publicUser: {
-          id: "userId",
+          id: null,
           name: "userName",
-          imageUrl: "imageUrl",
-          premium: false,
+          imageUrl: null,
         },
         settings: null,
       }}
@@ -30,7 +29,11 @@ test("render", () => {
     </PageDataContext.Provider>,
   );
 
-  isNotNull(r.queryByText("userName"));
+  isNotNull(r.queryByText("Practice"));
+  isNotNull(r.queryByText("Profile"));
+  isNotNull(r.queryByText("Typing Test"));
+  isNull(r.queryByText("Layouts"));
+  isNull(r.queryByText("userName"));
 
   r.unmount();
 });

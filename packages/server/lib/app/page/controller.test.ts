@@ -11,17 +11,8 @@ const context = new TestContext();
 
 for (const path of [
   "/",
-  "/account",
   "/help",
-  "/high-scores",
-  "/layouts",
-  "/multiplayer",
   "/profile",
-  "/profile/example1",
-  "/profile/example2",
-  "/profile/example3",
-  "/profile/example4",
-  "/profile/example5",
   "/typing-test",
   "/terms-of-service",
   "/privacy-policy",

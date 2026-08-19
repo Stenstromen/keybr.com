@@ -106,11 +106,10 @@ export default [
     context: import.meta.dirname,
     entry: {
       index: "./packages/server/lib/main.ts",
-      keybr: "./packages/server-cli/lib/main.ts",
     },
     output: {
       path: join(import.meta.dirname, "root", "lib"),
-      clean: false,
+      clean: true,
       filename: "[name].js",
       chunkFilename: "[name].js",
       assetModuleFilename: `[name][ext]`,
@@ -124,29 +123,14 @@ export default [
           test: /\/assets\//,
           use: "null-loader",
         },
-        {
-          test: /\/knex\/lib\/dialects\//,
-          exclude: /\/mysql|sqlite3|better-sqlite3\//,
-          use: "null-loader",
-        },
-        {
-          test: /\/knex\/lib\/migrations\//,
-          use: "null-loader",
-        },
       ],
-    },
-    externals: {
-      "sqlite3": "commonjs sqlite3",
-      "better-sqlite3": "commonjs better-sqlite3",
-      "bufferutil": "commonjs bufferutil",
-      "utf-8-validate": "commonjs utf-8-validate",
     },
     optimization: {
       minimize: false,
       moduleIds: "named",
       chunkIds: "named",
     },
-    devtool: "source-map",
+    devtool: dev ? "source-map" : false,
     plugins: [
       new webpack.DefinePlugin({
         ...ENV,
@@ -211,7 +195,7 @@ export default [
         },
       },
     },
-    devtool: "source-map",
+    devtool: dev ? "source-map" : false,
     plugins: [
       new webpack.DefinePlugin({
         ...ENV,

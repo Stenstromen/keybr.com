@@ -1,10 +1,11 @@
 #!/usr/bin/env -S npx tsnode
 
 import { Container } from "@fastr/invert";
-import { ConfigModule, Env } from "@keybr/config";
+import { makeKnex } from "@keybr/config";
+import { Env } from "@keybr/config/lib/env.ts";
+import { ConfigModule } from "@keybr/config/lib/module.ts";
 import { createSchema, UserLoginRequest } from "@keybr/database";
 import { Logger } from "@keybr/logger";
-import Knex from "knex";
 
 const email = "user@localhost";
 const accessToken = "xyz";
@@ -12,7 +13,7 @@ const accessToken = "xyz";
 Env.probeFilesSync();
 const container = new Container();
 container.load(new ConfigModule());
-const knex = container.get(Knex);
+const knex = makeKnex();
 
 async function exec() {
   try {

@@ -1,7 +1,8 @@
 import { Container } from "@fastr/invert";
-import { ConfigModule, Env } from "@keybr/config";
+import { makeKnex } from "@keybr/config";
+import { Env } from "@keybr/config/lib/env.ts";
+import { ConfigModule } from "@keybr/config/lib/module.ts";
 import { Command, CommanderError } from "commander";
-import Knex from "knex";
 import { PremiumCommand } from "./command/premium/index.ts";
 import { StatsCommand } from "./command/stats/index.ts";
 import { UserInfoCommand } from "./command/user-info/index.ts";
@@ -9,7 +10,7 @@ import { UserInfoCommand } from "./command/user-info/index.ts";
 Env.probeFilesSync();
 const container = new Container();
 container.load(new ConfigModule());
-const knex = container.get(Knex);
+const knex = makeKnex();
 const program = new Command("keybr")
   .addCommand(container.get(UserInfoCommand).command())
   .addCommand(container.get(PremiumCommand).command())

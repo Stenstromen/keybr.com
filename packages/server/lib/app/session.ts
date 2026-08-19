@@ -1,7 +1,8 @@
 import { type Binder, type Module, provides } from "@fastr/invert";
 import { type SessionOptions } from "@fastr/middleware-session";
 import { FileStore } from "@fastr/middleware-session-file-store";
-import { DataDir, Env } from "@keybr/config";
+import { DataDir } from "@keybr/config/lib/datadir.ts";
+import { Env } from "@keybr/config/lib/env.ts";
 
 export class SessionModule implements Module {
   configure(binder: Binder) {}

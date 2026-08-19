@@ -11,10 +11,9 @@ import {
   PageInfo,
   Pages,
 } from "@keybr/pages-shared";
-import { SettingsDatabase } from "@keybr/settings-database";
 import { staticTheme, ThemeContext, ThemePrefs } from "@keybr/themes";
 import { type IntlShape, RawIntlProvider } from "react-intl";
-import { type AuthState } from "../auth/index.ts";
+import { type AuthState } from "../auth/types.ts";
 import { localePattern, pIntl, preferredLocale } from "./intl.ts";
 
 @injectable()
@@ -24,7 +23,6 @@ export class Controller {
   constructor(
     @inject("canonicalUrl") readonly canonicalUrl: string,
     readonly view: View,
-    readonly database: SettingsDatabase,
   ) {}
 
   @http.GET("/")
@@ -53,19 +51,6 @@ export class Controller {
     return this.renderPage(ctx, Pages.practice, intl);
   }
 
-  @http.GET(`${Pages.account.path}`)
-  async ["account"](ctx: Context<RouterState & AuthState>) {
-    return this.renderPage(ctx, Pages.account);
-  }
-
-  @http.GET(`/{locale:${localePattern}}${Pages.account.path}`)
-  async ["account-i18n"](
-    ctx: Context<RouterState & AuthState>,
-    @pathParam("locale", pIntl) intl: IntlShape,
-  ) {
-    return this.renderPage(ctx, Pages.account, intl);
-  }
-
   @http.GET(`${Pages.profile.path}`)
   async ["profile"](ctx: Context<RouterState & AuthState>) {
     return this.renderPage(ctx, Pages.profile);
@@ -73,19 +58,6 @@ export class Controller {
 
   @http.GET(`/{locale:${localePattern}}${Pages.profile.path}`)
   async ["profile-i18n"](
-    ctx: Context<RouterState & AuthState>,
-    @pathParam("locale", pIntl) intl: IntlShape,
-  ) {
-    return this.renderPage(ctx, Pages.profile, intl);
-  }
-
-  @http.GET(`${Pages.profile.path}/{id:[a-zA-Z0-9]+}`)
-  async ["public-profile"](ctx: Context<RouterState & AuthState>) {
-    return this.renderPage(ctx, Pages.profile);
-  }
-
-  @http.GET(`/{locale:${localePattern}}${Pages.profile.path}/{id:[a-zA-Z0-9]+}`)
-  async ["public-profile-i18n"](
     ctx: Context<RouterState & AuthState>,
     @pathParam("locale", pIntl) intl: IntlShape,
   ) {
@@ -105,32 +77,6 @@ export class Controller {
     return this.renderPage(ctx, Pages.help, intl);
   }
 
-  @http.GET(`${Pages.highScores.path}`)
-  async ["high-scores"](ctx: Context<RouterState & AuthState>) {
-    return this.renderPage(ctx, Pages.highScores);
-  }
-
-  @http.GET(`/{locale:${localePattern}}${Pages.highScores.path}`)
-  async ["high-scores-18n"](
-    ctx: Context<RouterState & AuthState>,
-    @pathParam("locale", pIntl) intl: IntlShape,
-  ) {
-    return this.renderPage(ctx, Pages.highScores, intl);
-  }
-
-  @http.GET(`${Pages.layouts.path}`)
-  async ["layouts"](ctx: Context<RouterState & AuthState>) {
-    return this.renderPage(ctx, Pages.layouts);
-  }
-
-  @http.GET(`/{locale:${localePattern}}${Pages.layouts.path}`)
-  async ["layouts-i18n"](
-    ctx: Context<RouterState & AuthState>,
-    @pathParam("locale", pIntl) intl: IntlShape,
-  ) {
-    return this.renderPage(ctx, Pages.layouts, intl);
-  }
-
   @http.GET(`${Pages.typingTest.path}`)
   async ["typing-test"](ctx: Context<RouterState & AuthState>) {
     return this.renderPage(ctx, Pages.typingTest);
@@ -142,19 +88,6 @@ export class Controller {
     @pathParam("locale", pIntl) intl: IntlShape,
   ) {
     return this.renderPage(ctx, Pages.typingTest, intl);
-  }
-
-  @http.GET(`${Pages.multiplayer.path}`)
-  async ["multiplayer"](ctx: Context<RouterState & AuthState>) {
-    return this.renderPage(ctx, Pages.multiplayer);
-  }
-
-  @http.GET(`/{locale:${localePattern}}${Pages.multiplayer.path}`)
-  async ["multiplayer-i18n"](
-    ctx: Context<RouterState & AuthState>,
-    @pathParam("locale", pIntl) intl: IntlShape,
-  ) {
-    return this.renderPage(ctx, Pages.multiplayer, intl);
   }
 
   @http.GET(`${Pages.termsOfService.path}`)
@@ -187,14 +120,13 @@ export class Controller {
     ctx: Context<RouterState & AuthState>,
     { locale }: IntlShape,
   ): Promise<PageData> {
-    const { user, publicUser } = ctx.state;
-    const settings = user != null ? await this.database.get(user.id!) : null;
+    const { publicUser } = ctx.state;
     return {
       base: this.canonicalUrl,
       locale,
-      user: user?.toDetails() ?? null,
+      user: null,
       publicUser,
-      settings: settings?.toJSON() ?? null,
+      settings: null,
     };
   }
 
@@ -203,18 +135,15 @@ export class Controller {
     page: PageInfo,
     intl: IntlShape | null = null,
   ): Promise<string> {
-    if (intl == null) {
-      intl = await loadIntl(defaultLocale);
-    }
-
-    const pageData = await this.pageData(ctx, intl);
+    const resolvedIntl = intl ?? (await loadIntl(defaultLocale));
+    const pageData = await this.pageData(ctx, resolvedIntl);
 
     ctx.response.type = "text/html";
 
     ctx.response.headers.append("Link", this.view.preloadHeaders);
 
     return this.view.renderPage(
-      <RawIntlProvider value={intl}>
+      <RawIntlProvider value={resolvedIntl}>
         <PreferredLocaleContext.Provider value={preferredLocale(ctx)}>
           <PageDataContext.Provider value={pageData}>
             <ThemeContext.Provider value={staticTheme(themePrefs(ctx))}>
