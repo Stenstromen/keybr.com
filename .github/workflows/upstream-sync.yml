@@ -1,0 +1,120 @@
+# Weekly Copilot agent that compares https://github.com/aradzie/keybr.com with this fork
+# and opens draft pull requests for changes that still fit the slimmed-down app.
+#
+# Personal repositories cannot bill Copilot from GITHUB_TOKEN. Add a repository
+# secret named COPILOT_GITHUB_TOKEN: a fine-grained PAT with access to this
+# repository and the "Copilot Requests" permission.
+# https://github.com/settings/personal-access-tokens/new
+
+name: Weekly upstream sync
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Monday 05:00 UTC (07:00 in Europe/Stockholm during standard time)
+    - cron: "0 5 * * 1"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: upstream-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Require Copilot token
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+        run: |
+          if [ -z "$COPILOT_GITHUB_TOKEN" ]; then
+            echo "Add a repository secret named COPILOT_GITHUB_TOKEN (fine-grained PAT with Copilot Requests)."
+            exit 1
+          fi
+
+      - name: Fetch upstream and write a comparison
+        id: compare
+        run: |
+          git remote add upstream https://github.com/aradzie/keybr.com.git
+          git fetch --no-tags upstream master
+
+          out="${RUNNER_TEMP}/upstream-sync"
+          mkdir -p "$out"
+          git rev-parse HEAD > "$out/ours.txt"
+          git rev-parse upstream/master > "$out/theirs.txt"
+          git log --no-merges --pretty=format:'%H%x09%s' HEAD..upstream/master > "$out/commits.tsv"
+          git diff --name-status HEAD...upstream/master > "$out/names.txt"
+          git diff --stat HEAD...upstream/master > "$out/stat.txt"
+
+          count=$(grep -c . "$out/commits.tsv" || true)
+          echo "commit_count=$count" >> "$GITHUB_OUTPUT"
+          echo "report_dir=$out" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Upstream comparison"
+            echo ""
+            echo "This fork: \`$(cat "$out/ours.txt")\`"
+            echo ""
+            echo "Upstream master: \`$(cat "$out/theirs.txt")\`"
+            echo ""
+            echo "Commits on upstream that are not in this fork: ${count}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Set up Node.js
+        if: steps.compare.outputs.commit_count != '0'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24.x"
+
+      - name: Install Copilot CLI
+        if: steps.compare.outputs.commit_count != '0'
+        run: npm install -g @github/copilot
+
+      - name: Configure git identity
+        if: steps.compare.outputs.commit_count != '0'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Ask Copilot to port relevant upstream changes
+        if: steps.compare.outputs.commit_count != '0'
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+          REPORT_DIR: ${{ steps.compare.outputs.report_dir }}
+        run: |
+          copilot --agent upstream-sync --no-ask-user \
+            --allow-tool='shell(git:*)' \
+            --allow-tool='shell(gh:*)' \
+            --allow-tool=read \
+            --allow-tool=search \
+            --allow-tool=edit \
+            --allow-tool=write \
+            -p "Compare this checkout of ${GITHUB_REPOSITORY} (branch master) with upstream https://github.com/aradzie/keybr.com branch master. Read the comparison files in ${REPORT_DIR} (ours.txt, theirs.txt, commits.tsv, names.txt, stat.txt), then open draft pull requests for upstream changes that still fit this slimmed-down fork. User management stays removed. Write upstream-sync-summary.md when you finish."
+
+          if [ -f upstream-sync-summary.md ]; then
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            cat upstream-sync-summary.md >> "$GITHUB_STEP_SUMMARY"
+            rm -f upstream-sync-summary.md
+          fi
+
+      - name: Refuse commits left on master
+        if: steps.compare.outputs.commit_count != '0'
+        run: |
+          git checkout master
+          git fetch origin master
+          ahead=$(git rev-list --count origin/master..master)
+          if [ "$ahead" != "0" ] || [ -n "$(git status --porcelain)" ]; then
+            echo "The agent left master dirty or ahead of origin/master."
+            git status
+            exit 1
+          fi
