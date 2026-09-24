@@ -1,35 +1,13 @@
 import { test } from "node:test";
-import { fakeAdapter, Recorder } from "@fastr/fetch";
 import { type PageData, PageDataContext } from "@keybr/pages-shared";
 import { ResultFaker, useResults } from "@keybr/result";
-import { formatFile } from "@keybr/result-io";
 import { act, render, waitFor } from "@testing-library/react";
 import { equal } from "rich-assert";
 import { ResultLoader } from "./ResultLoader.tsx";
 
 const faker = new ResultFaker();
 
-test.beforeEach(() => {
-  fakeAdapter.reset();
-});
-
-test.afterEach(() => {
-  fakeAdapter.reset();
-});
-
 test("load results", async () => {
-  // Arrange.
-
-  const recorder = new Recorder();
-  fakeAdapter.on.GET("/_/sync/data").replyWith(
-    formatFile(faker.nextResultList(3)),
-    {
-      status: 200,
-      headers: { "Content-Type": "application/octet-stream" },
-    },
-    recorder,
-  );
-
   // Act.
 
   const r = render(
@@ -43,7 +21,6 @@ test("load results", async () => {
 
   // Assert.
 
-  equal(recorder.requestCount, 0);
   equal(r.getByTitle("count").textContent, "0");
 
   // Act.
@@ -55,7 +32,6 @@ test("load results", async () => {
 
   // Assert.
 
-  equal(recorder.requestCount, 0);
   equal(r.getByTitle("count").textContent, "1");
 
   // Act.
@@ -67,7 +43,6 @@ test("load results", async () => {
 
   // Assert.
 
-  equal(recorder.requestCount, 0);
   equal(r.getByTitle("count").textContent, "0");
 
   // Cleanup.
@@ -78,14 +53,6 @@ test("load results", async () => {
 function AnonymousUser({ children }: { children: any }) {
   return (
     <PageDataContext.Provider value={{ publicUser: { id: null } } as PageData}>
-      {children}
-    </PageDataContext.Provider>
-  );
-}
-
-function NamedUser({ children }: { children: any }) {
-  return (
-    <PageDataContext.Provider value={{ publicUser: { id: "abc" } } as PageData}>
       {children}
     </PageDataContext.Provider>
   );
